@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="h-[100vh] w-full flex justify-center items-center">
+        <div class="h-[75%] w-[40%] border-2 border-gray-400">
+            <div id="quiz-container" class="m-4 flex flex-col gap-4">
+                <div class="w-full h-24 bg-black p-2 rounded-lg">
+                    <div class="flex justify-center items-center">
+                        <p class="text-white font-semibold text-2xl">Quiz App</p>
+                    </div>
+                    <div class="flex justify-between">
+                        <div id="question-number" class="text-white">Questions 1/10</div>
+                        <div id="score" class="text-white">Score: 0</div>
+                    </div>
+                </div>
+
+                <div id="question-text" class="py-4 text-black text-xl font-semibold flex justify-center"></div>
+
+                <div id="options-container" class="flex flex-col gap-4"></div>
+
+                <div class="w-full flex items-center justify-center">
+                    <button id="next-button" class="bg-black text-white px-8 py-2 rounded-lg">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizContainer = document.getElementById('quiz-container');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const questionNumberText = document.getElementById('question-number');
+        const scoreText = document.getElementById('score');
+        const nextButton = document.getElementById('next-button');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = [];
+
+        async function loadQuestions() {
+            const response = await fetch('questions.json');
+            questions = await response.json();
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const question = questions[currentQuestionIndex];
+            questionText.innerText = question.question;
+            questionNumberText.innerText = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+
+            optionsContainer.innerHTML = '';
+            question.options.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('border-2', 'border-gray-400', 'py-2', 'px-4', 'text-gray-500', 'cursor-pointer');
+                optionElement.innerText = option;
+                optionElement.addEventListener('click', () => selectOption(option, question.answer));
+                optionsContainer.appendChild(optionElement);
+            });
+        }
+
+        function selectOption(selectedOption, correctAnswer) {
+            if (selectedOption === correctAnswer) {
+                score++;
+                scoreText.innerText = `Score: ${score}`;
+            }
+            nextButton.disabled = false;
+            // nextButton.classList.add('hidden');
+        }
+
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                displayQuestion();
+            } else {
+                quizContainer.innerHTML = `<div class="text-black text-xl font-semibold flex justify-center">Quiz Completed! Your score: ${score}</div>`;
+            }
+            nextButton.disabled = true;
+        });
+
+        loadQuestions();
+    </script>
+</body>
+</html>
